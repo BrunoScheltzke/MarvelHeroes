@@ -23,6 +23,7 @@ extension Hero {
     
     enum ThumbnailInfo: String, CodingKey {
         case path
+        case imgExtension = "extension"
     }
     
     init(from decoder: Decoder) throws {
@@ -35,7 +36,9 @@ extension Hero {
         comics = try comicsInfo.decode([Comic].self, forKey: .items)
         
         let thumbnailInfo = try values.nestedContainer(keyedBy: ThumbnailInfo.self, forKey: .thumbnail)
-        imageURL = try thumbnailInfo.decode(String.self, forKey: .path)
+        let pathToImage = try thumbnailInfo.decode(String.self, forKey: .path)
+        let imgExtenstion = try thumbnailInfo.decode(String.self, forKey: .imgExtension)
+        imageURL = pathToImage + "/standard_medium." + imgExtenstion
     }
 }
 

@@ -39,12 +39,22 @@ extension ViewController: UITableViewDataSource {
         let cell = tableView.dequeueReusableCell(withIdentifier: cellId, for: indexPath)
         let hero = vm.heroesCellViewModel[indexPath.row]
         cell.textLabel?.text = hero.name
+        hero.delegate = cell
+        hero.startLoadingImage()
         
         return cell
     }
     
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
         return vm.heroesCellViewModel.count
+    }
+}
+
+extension UITableViewCell: ImageDelegate {
+    func finishedLoadingImage(_ image: UIImage) {
+        DispatchQueue.main.async {
+            self.imageView?.image = image
+        }
     }
 }
 

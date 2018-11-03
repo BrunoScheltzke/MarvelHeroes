@@ -27,13 +27,13 @@ final class HeroDetailViewModel {
     
     func startLoadingImage() {
         guard let imageURL = hero.imageURL else {
-            delegate?.finishedLoadingImage(nil)
+            delegate?.finishedLoadingImage(#imageLiteral(resourceName: "marvellogo"))
             return
         }
         
         marvelService.fetchImage(imgURL: imageURL) { [unowned self] result in
             switch result {
-            case .failure: self.delegate?.finishedLoadingImage(nil)
+            case .failure: self.delegate?.finishedLoadingImage(#imageLiteral(resourceName: "marvellogo"))
             case .success(let image):
                 self.delegate?.finishedLoadingImage(image)
             }
