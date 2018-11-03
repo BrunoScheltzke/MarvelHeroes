@@ -13,4 +13,5 @@ struct Hero: Decodable {
     let name: String?
     let description: String?
     let comics: [Comic]
+    let imageURL: String?
 }

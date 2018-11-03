@@ -14,10 +14,15 @@ extension Hero {
         case name
         case description
         case comics
+        case thumbnail
     }
     
-    enum AdditionalInfo: String, CodingKey {
+    enum ComicsInfo: String, CodingKey {
         case items
+    }
+    
+    enum ThumbnailInfo: String, CodingKey {
+        case path
     }
     
     init(from decoder: Decoder) throws {
@@ -26,8 +31,11 @@ extension Hero {
         name = try values.decode(String.self, forKey: .name)
         description = try values.decode(String.self, forKey: .description)
         
-        let additionalInfo = try values.nestedContainer(keyedBy: AdditionalInfo.self, forKey: .comics)
-        comics = try additionalInfo.decode([Comic].self, forKey: .items)
+        let comicsInfo = try values.nestedContainer(keyedBy: ComicsInfo.self, forKey: .comics)
+        comics = try comicsInfo.decode([Comic].self, forKey: .items)
+        
+        let thumbnailInfo = try values.nestedContainer(keyedBy: ThumbnailInfo.self, forKey: .thumbnail)
+        imageURL = try thumbnailInfo.decode(String.self, forKey: .path)
     }
 }
 

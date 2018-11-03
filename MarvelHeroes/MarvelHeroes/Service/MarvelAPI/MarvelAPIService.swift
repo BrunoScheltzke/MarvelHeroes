@@ -9,9 +9,11 @@
 import Foundation
 import CryptoSwift
 import Alamofire
+import AlamofireImage
 
 protocol MarvelAPIServiceProtocol {
     func requestCharacters(offset: Int?, amount: Int, completion: @escaping(Result<[Hero]>) -> Void)
+    func fetchImage(imgURL: String, completion: @escaping(Result<UIImage>) -> Void)
 }
 
 class MarvelAPIService: MarvelAPIServiceProtocol {
@@ -39,17 +41,53 @@ class MarvelAPIService: MarvelAPIServiceProtocol {
                           parameters: params,
                           encoding: URLEncoding(destination: .queryString),
                           headers: nil)
-            .responseJSON { json in
-                do {
-                    guard let data = json.data else {
-                        completion(.failure(CustomError.invalidData))
-                        return
+            .validate()
+            .responseJSON { response in
+                switch response.result {
+                case .success:
+                    do {
+                        guard let data = response.data else {
+                            completion(.failure(CustomError.invalidData))
+                            return
+                        }
+                        let result = try JSONDecoder().decode(MarvelResponse.self, from: data)
+                        completion(.success(result.heroes))
+                    } catch {
+                        completion(.failure(error))
                     }
-                    let result = try JSONDecoder().decode(MarvelResponse.self, from: data)
-                    completion(.success(result.heroes))
-                } catch {
+                case .failure(let error):
                     completion(.failure(error))
                 }
         }
     }
+    
+    //MARK: Image
+    private let imageCache = AutoPurgingImageCache()
+    
+    func fetchImage(imgURL: String, completion: @escaping(Result<UIImage>) -> Void) {
+        if let cachedImg = imageCache.image(withIdentifier: imgURL) {
+            completion(.success(cachedImg))
+            return
+        }
+        
+        Alamofire.request(imgURL,
+                     method: .get,
+                     parameters: defaultParams,
+                     encoding: URLEncoding(destination: .queryString),
+                     headers: nil)
+            .validate()
+            .responseImage { [unowned self] response in
+                switch response.result {
+                case .success(let img):
+                    self.imageCache.add(img, withIdentifier: imgURL)
+                    completion(.success(img))
+                case .failure(let error):
+                    completion(.failure(error))
+                }
+        }
+    }
+}
+
+enum CustomError: Error {
+    case invalidData
 }

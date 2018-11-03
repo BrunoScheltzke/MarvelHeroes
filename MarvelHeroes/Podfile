@@ -8,5 +8,6 @@ target 'MarvelHeroes' do
   # Pods for MarvelHeroes
   pod 'CryptoSwift'
   pod 'Alamofire'
+  pod 'AlamofireImage'
 
 end
