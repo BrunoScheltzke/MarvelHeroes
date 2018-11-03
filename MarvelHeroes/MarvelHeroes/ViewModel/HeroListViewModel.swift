@@ -9,14 +9,13 @@
 import UIKit
 
 final class HeroListViewModel {
-    private var heroes: [Hero] = []
-    
     private var isFetching: Bool = false
     private let marvelService: MarvelAPIServiceProtocol
     
-    private let defaultAmountOfHeroes: Int = 15
+    private let defaultAmountOfHeroes: Int = 20
     
     var delegate: HeroListDelegate?
+    var heroesCellViewModel: [HeroCellViewModel] = []
     
     init(marvelService: MarvelAPIServiceProtocol) {
         self.marvelService = marvelService
@@ -25,27 +24,24 @@ final class HeroListViewModel {
     func fetchHeroes() {
         guard !isFetching else { return }
         
-        marvelService.requestCharacters(offset: heroes.count,
-                                        amount: 15) { [unowned self] result in
+        marvelService.requestCharacters(offset: heroesCellViewModel.count,
+                                        amount: defaultAmountOfHeroes) { [unowned self] result in
             switch result {
             case .failure(let error):
                 self.delegate?.present(error)
             case .success(let newHeroes):
-                self.heroes.append(contentsOf: newHeroes)
-                let indexPaths = self.getIndexPathsToInsert(newHeroes: newHeroes)
+                let newHeroesVM = newHeroes.map { HeroCellViewModel(marvelService: self.marvelService, hero: $0) }
+                self.heroesCellViewModel.append(contentsOf: newHeroesVM)
+                let indexPaths = self.getIndexPathsToInsert(newHeroes: newHeroesVM)
                 self.delegate?.receivedHeroes(indexPathsToInsert: indexPaths)
             }
         }
     }
     
-    private func getIndexPathsToInsert(newHeroes: [Hero]) -> [IndexPath] {
-        let startIndex = heroes.count - newHeroes.count
+    private func getIndexPathsToInsert(newHeroes: [HeroCellViewModel]) -> [IndexPath] {
+        let startIndex = heroesCellViewModel.count - newHeroes.count
         let endIndex = startIndex + newHeroes.count
         return (startIndex..<endIndex).map { IndexPath(row: $0, section: 0) }
-    }
-    
-    func heroCellViewModel(for row: Int) -> HeroCellViewModel {
-        return HeroCellViewModel(marvelService: marvelService, hero: heroes[row])
     }
 }
 
