@@ -45,33 +45,33 @@ class HeroDetailViewController: UIViewController {
     }
     
     func setupViewModel() {
-        heroDetailViewModel.delegate = self
-        heroDetailViewModel.startLoadingImage()
+        fetchHeroImage()
         view.lock()
-        heroImageView.lock()
-        heroDetailViewModel.fetchHeroComics()
+        fetchComics()
         title = heroDetailViewModel.name
     }
-}
-
-extension HeroDetailViewController: HeroDetailDelegate {
-    func received(_ error: Error) {
-        view.unlock()
-        spinner.stopAnimating()
-        present(error: error)
+    
+    func fetchHeroImage() {
+        heroDetailViewModel.fetchHeroDetailImage { [unowned self] image in
+            DispatchQueue.main.async {
+                self.heroImageView.image = image
+            }
+        }
     }
     
-    func finishedFetchingHeroComics(with indexPaths: [IndexPath]) {
-        view.unlock()
-        spinner.stopAnimating()
-        tableView.beginUpdates()
-        tableView.insertRows(at: indexPaths, with: .automatic)
-        tableView.endUpdates()
-    }
-    
-    func finishedLoadingImage(_ image: UIImage) {
-        heroImageView.unlock()
-        heroImageView.image = image
+    func fetchComics() {
+        heroDetailViewModel.fetchHeroComics { [unowned self] result in
+            self.view.unlock()
+            self.spinner.stopAnimating()
+            
+            switch result {
+            case .failure(let error): self.present(error: error)
+            case .success(let indexPaths):
+                self.tableView.beginUpdates()
+                self.tableView.insertRows(at: indexPaths, with: .automatic)
+                self.tableView.endUpdates()
+            }
+        }
     }
 }
 
@@ -117,7 +117,7 @@ extension HeroDetailViewController: UIScrollViewDelegate, UITableViewDelegate {
         let numRows = tableView.numberOfRows(inSection: 1)
         if (indexPath.row == numRows - 1) {
             spinner.startAnimating()
-            heroDetailViewModel.fetchHeroComics()
+            fetchComics()
         }
     }
 }

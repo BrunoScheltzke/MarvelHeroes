@@ -16,7 +16,6 @@ final class HeroListViewModel {
     
     var hasReachedMaxAmountOfHeroes: Bool = false
     
-    var delegate: HeroListDelegate?
     var heroesCellViewModel: [HeroCellViewModel] = []
     
     init(marvelService: MarvelAPIServiceProtocol) {
@@ -28,23 +27,28 @@ final class HeroListViewModel {
         return heroVM.getHeroDetailViewModel()
     }
     
-    func fetchHeroes() {
-        guard !isFetching, !hasReachedMaxAmountOfHeroes else { return }
+    func fetchHeroes(_ completion: @escaping(Result<[IndexPath]>) -> Void) {
+        guard !isFetching else { return }
         isFetching = true
+        
+        guard !hasReachedMaxAmountOfHeroes else {
+            completion(.success([]))
+            return
+        }
         
         marvelService.requestCharacters(offset: heroesCellViewModel.count,
                                         amount: defaultAmountOfHeroes) { [unowned self] result in
             switch result {
             case .failure(let error):
-                self.delegate?.received(error)
+                completion(.failure(error))
                 
-            case .success(let result):
-                let newHeroes = result.0
-                self.hasReachedMaxAmountOfHeroes = result.hasReachedMaxAmount
+            case .success(let response):
+                self.hasReachedMaxAmountOfHeroes = response.hasReachedMaxAmount
+                let newHeroes = response.0
                 let newHeroesVM = newHeroes.map { HeroCellViewModel(marvelService: self.marvelService, hero: $0) }
                 self.heroesCellViewModel.append(contentsOf: newHeroesVM)
                 let indexPaths = self.getIndexPathsToInsert(newHeroes: newHeroesVM)
-                self.delegate?.receivedHeroes(indexPathsToInsert: indexPaths)
+                completion(.success(indexPaths))
             }
             self.isFetching = false
         }
@@ -56,9 +60,4 @@ final class HeroListViewModel {
         let endIndex = startIndex + newHeroes.count
         return (startIndex..<endIndex).map { IndexPath(row: $0, section: 0) }
     }
-}
-
-protocol HeroListDelegate {
-    func received(_ error: Error)
-    func receivedHeroes(indexPathsToInsert: [IndexPath])
 }

@@ -10,7 +10,6 @@ import UIKit
 
 final class HeroCellViewModel {
     let name: String
-    var delegate: ImageDelegate?
     let placeholderImage: UIImage = #imageLiteral(resourceName: "marvellogo")
     
     private let hero: Hero
@@ -19,20 +18,24 @@ final class HeroCellViewModel {
     init(marvelService: MarvelAPIServiceProtocol, hero: Hero) {
         self.hero = hero
         self.marvelService = marvelService
-        self.name = hero.name ?? "Name unavailable"
+        
+        if let name = hero.name, !name.isEmpty {
+            self.name = name
+        } else {
+            self.name = "Name unavailable"
+        }
     }
     
-    func startLoadingImage() {
+    func fetchImage(completion: @escaping(UIImage) -> Void) {
         guard let imageURL = hero.imageURL else {
-            delegate?.finishedLoadingImage(#imageLiteral(resourceName: "marvellogo"))
+            completion(#imageLiteral(resourceName: "marvellogo"))
             return
         }
         
-        marvelService.fetchImage(imgURL: imageURL, with: .heroList) { [unowned self] result in
+        marvelService.fetchImage(imgURL: imageURL, with: .heroList) { result in
             switch result {
-            case .failure: self.delegate?.finishedLoadingImage(#imageLiteral(resourceName: "marvellogo"))
-            case .success(let image):
-                self.delegate?.finishedLoadingImage(image)
+            case .failure: completion(#imageLiteral(resourceName: "marvellogo"))
+            case .success(let image): completion(image)
             }
         }
     }
@@ -40,8 +43,4 @@ final class HeroCellViewModel {
     func getHeroDetailViewModel() -> HeroDetailViewModel {
         return HeroDetailViewModel(marvelService: marvelService, hero: hero)
     }
-}
-
-protocol ImageDelegate {
-    func finishedLoadingImage(_ image: UIImage)
 }

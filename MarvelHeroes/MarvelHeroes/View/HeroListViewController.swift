@@ -42,9 +42,8 @@ class HeroListViewController: UIViewController {
     
     func setupViewModel(_ viewModel: HeroListViewModel) {
         vm = viewModel
-        vm.delegate = self
         view.lock()
-        vm.fetchHeroes()
+        fetchHeroes()
     }
     
     override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
@@ -52,6 +51,21 @@ class HeroListViewController: UIViewController {
             let vc = segue.destination as? HeroDetailViewController,
             let heroDetailVM = sender as? HeroDetailViewModel {
             vc.heroDetailViewModel = heroDetailVM
+        }
+    }
+    
+    func fetchHeroes() {
+        vm.fetchHeroes { [unowned self] result in
+            self.view.unlock()
+            self.spinner.stopAnimating()
+            
+            switch result {
+            case .failure(let error):
+                self.present(error: error)
+                
+            case .success(let indexPaths):
+                self.collectionView.insertItems(at: indexPaths)
+            }
         }
     }
 }
@@ -105,26 +119,12 @@ extension HeroListViewController: UICollectionViewDelegate {
         let numRows = collectionView.numberOfItems(inSection: 0)
         if (indexPath.row == numRows - 1) {
             spinner.startAnimating()
-            vm.fetchHeroes()
+            fetchHeroes()
         }
     }
     
     func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
         let heroDetailVM = vm.getHeroDetailViewModel(forRow: indexPath.row)
         performSegue(withIdentifier: heroDetailSegue, sender: heroDetailVM)
-    }
-}
-
-extension HeroListViewController: HeroListDelegate {
-    func received(_ error: Error) {
-        view.unlock()
-        spinner.stopAnimating()
-        present(error: error)
-    }
-    
-    func receivedHeroes(indexPathsToInsert: [IndexPath]) {
-        view.unlock()
-        spinner.stopAnimating()
-        collectionView.insertItems(at: indexPathsToInsert)
     }
 }

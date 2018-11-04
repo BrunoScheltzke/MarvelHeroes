@@ -10,7 +10,6 @@ import UIKit
 
 final class ComicViewModel {
     let title: String
-    var delegate: ImageDelegate?
     let placeholderImage: UIImage = #imageLiteral(resourceName: "marvellogo")
     
     private let comic: Comic
@@ -27,17 +26,16 @@ final class ComicViewModel {
         }
     }
     
-    func startLoadingImage() {
+    func fetchComicImage(_ completion: @escaping(UIImage) -> Void) {
         guard let imageURL = comic.imageURL else {
-            delegate?.finishedLoadingImage(#imageLiteral(resourceName: "marvellogo"))
+            completion(#imageLiteral(resourceName: "marvellogo"))
             return
         }
 
-        marvelService.fetchImage(imgURL: imageURL, with: .comicList) { [unowned self] result in
+        marvelService.fetchImage(imgURL: imageURL, with: .comicList) { result in
             switch result {
-            case .failure: self.delegate?.finishedLoadingImage(#imageLiteral(resourceName: "marvellogo"))
-            case .success(let image):
-                self.delegate?.finishedLoadingImage(image)
+            case .failure: completion(#imageLiteral(resourceName: "marvellogo"))
+            case .success(let image): completion(image)
             }
         }
     }

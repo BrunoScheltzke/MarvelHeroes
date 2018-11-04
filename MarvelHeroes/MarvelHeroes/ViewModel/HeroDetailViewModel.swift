@@ -12,7 +12,6 @@ final class HeroDetailViewModel {
     let name: String
     let description: String
     var comicViewModels: [ComicViewModel] = []
-    var delegate: HeroDetailDelegate?
     
     var hasReachedMaxAmountOfComics: Bool = false
     
@@ -40,22 +39,28 @@ final class HeroDetailViewModel {
         self.marvelService = marvelService
     }
     
-    func fetchHeroComics() {
-        guard !isFetching, !hasReachedMaxAmountOfComics else { return }
-        
+    func fetchHeroComics(_ completion: @escaping(Result<[IndexPath]>) -> Void ) {
+        guard !isFetching else { return }
         isFetching = true
         
-        marvelService.requestComics(of: hero, offset: comicViewModels.count, amount: defaultAmountOfComics) { [unowned self] result in
-            self.isFetching = false
+        guard !hasReachedMaxAmountOfComics else {
+            completion(.success([]))
+            return
+        }
+        
+        marvelService.requestComics(of: hero, offset: comicViewModels.count, amount: defaultAmountOfComics) { [weak self] result in
+            guard let strongSelf = self else { return }
+            
+            strongSelf.isFetching = false
             switch result {
-            case .failure(let error): self.delegate?.received(error)
-            case .success(let result):
-                let newComics = result.0
-                self.hasReachedMaxAmountOfComics = result.hasReachedMaxAmount
-                let newComicsVM = newComics.map { ComicViewModel(marvelService: self.marvelService, comic: $0) }
-                self.comicViewModels.append(contentsOf: newComicsVM)
-                let indexPaths = self.getIndexPathsToInsert(newComics: newComicsVM)
-                self.delegate?.finishedFetchingHeroComics(with: indexPaths)
+            case .failure(let error): completion(.failure(error))
+            case .success(let response):
+                strongSelf.hasReachedMaxAmountOfComics = response.hasReachedMaxAmount
+                let newComics = response.0
+                let newComicsVM = newComics.map { ComicViewModel(marvelService: strongSelf.marvelService, comic: $0) }
+                strongSelf.comicViewModels.append(contentsOf: newComicsVM)
+                let indexPaths = strongSelf.getIndexPathsToInsert(newComics: newComicsVM)
+                completion(.success(indexPaths))
             }
         }
     }
@@ -67,22 +72,17 @@ final class HeroDetailViewModel {
         return (startIndex..<endIndex).map { IndexPath(row: $0, section: 1) }
     }
     
-    func startLoadingImage() {
+    func fetchHeroDetailImage(_ completion: @escaping(UIImage) -> Void) {
         guard let imageURL = hero.imageURL else {
-            delegate?.finishedLoadingImage(#imageLiteral(resourceName: "marvellogo"))
+            completion(#imageLiteral(resourceName: "marvellogo"))
             return
         }
         
-        marvelService.fetchImage(imgURL: imageURL, with: .heroDetail) { [unowned self] result in
+        marvelService.fetchImage(imgURL: imageURL, with: .heroDetail) { result in
             switch result {
-            case .failure: self.delegate?.finishedLoadingImage(#imageLiteral(resourceName: "marvellogo"))
-            case .success(let image): self.delegate?.finishedLoadingImage(image)
+            case .failure: completion(#imageLiteral(resourceName: "marvellogo"))
+            case .success(let image): completion(image)
             }
         }
     }
-}
-
-protocol HeroDetailDelegate: ImageDelegate {
-    func finishedFetchingHeroComics(with indexPaths: [IndexPath])
-    func received(_ error: Error)
 }

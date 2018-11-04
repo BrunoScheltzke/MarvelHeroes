@@ -13,20 +13,25 @@ class ComicTableViewCell: UITableViewCell {
     @IBOutlet weak var comicTitleLabel: UILabel!
     @IBOutlet weak var comicDetailLabel: UILabel!
     
+    private var comicViewModel: ComicViewModel!
+    
     func setViewModel(_ comicVM: ComicViewModel) {
+        self.comicViewModel = comicVM
+        
         self.comicTitleLabel.text = comicVM.title
-        comicVM.delegate = self
-        comicVM.startLoadingImage()
-        comicImageView.image = comicVM.placeholderImage
-        comicImageView.lock()
+        fetchComicImage()
     }
-}
-
-extension ComicTableViewCell: ImageDelegate {
-    func finishedLoadingImage(_ image: UIImage) {
-        DispatchQueue.main.async {
-            self.comicImageView.image = image
-            self.comicImageView.unlock()
+    
+    func fetchComicImage() {
+        comicImageView.image = comicViewModel.placeholderImage
+        comicImageView.lock()
+        comicViewModel.fetchComicImage { [weak self] image in
+            guard let strongSelf = self else { return }
+            
+            DispatchQueue.main.async {
+                strongSelf.comicImageView.image = image
+                strongSelf.comicImageView.unlock()
+            }
         }
     }
 }

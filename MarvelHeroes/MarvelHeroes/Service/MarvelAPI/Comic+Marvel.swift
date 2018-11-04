@@ -12,7 +12,6 @@ extension Comic {
     enum CodingKeys: String, CodingKey {
         case id
         case title
-        case description
         case thumbnail
     }
     
