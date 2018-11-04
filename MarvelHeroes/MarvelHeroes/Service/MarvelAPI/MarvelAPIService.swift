@@ -12,15 +12,23 @@ import Alamofire
 import AlamofireImage
 
 protocol MarvelAPIServiceProtocol {
+    /// Fetches characters from the Marvel API
+    ///
+    /// - Parameters:
+    ///   - offset: the start point from where to get the amount of heroes
+    ///   - amount: the amount of heroes to retrive
+    ///   - completion: returns an array of the heroes and a boolean that informs if it has reached the maximum amount of heroes
     func requestCharacters(offset: Int?, amount: Int, completion: @escaping(Result<([Hero], hasReachedMaxAmount: Bool)>) -> Void)
+    
+    /// Fetches Comics of a specific hero from the Marvel API
+    ///
+    /// - Parameters:
+    ///   - hero: the hero from whom to fetch the comics
+    ///   - offset: the start point from where to get the amount of comics
+    ///   - amount: the amount of comics to retrieve
+    ///   - completion: returns an array of the comics and a boolean that informs if it has reached the maximum amount of comics of the given hero
     func requestComics(of hero: Hero, offset: Int?, amount: Int, completion: @escaping(Result<([Comic], hasReachedMaxAmount: Bool)>) -> Void)
     func fetchImage(imgURL: String, with size: MarvelImageSize, completion: @escaping(Result<UIImage>) -> Void)
-}
-
-enum MarvelImageSize: String {
-    case comicList = "portrait_medium"
-    case heroList = "portrait_xlarge"
-    case heroDetail = "landscape_xlarge"
 }
 
 class MarvelAPIService: MarvelAPIServiceProtocol {
@@ -119,6 +127,12 @@ class MarvelAPIService: MarvelAPIServiceProtocol {
 
 enum CustomError: Error {
     case invalidData
+}
+
+enum MarvelImageSize: String {
+    case comicList = "portrait_medium"
+    case heroList = "portrait_xlarge"
+    case heroDetail = "landscape_xlarge"
 }
 
 // Helper struct created to deal with response from Marvel API

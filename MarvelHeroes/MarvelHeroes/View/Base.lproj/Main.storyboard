@@ -91,7 +91,7 @@
                                 </collectionReusableView>
                             </collectionView>
                         </subviews>
-                        <color key="backgroundColor" red="0.89594483375549316" green="0.22789418697357178" blue="0.1831953227519989" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                        <color key="backgroundColor" cocoaTouchSystemColor="viewFlipsideBackgroundColor"/>
                         <constraints>
                             <constraint firstItem="6Tk-OE-BBY" firstAttribute="bottom" secondItem="D2L-6h-jiD" secondAttribute="bottom" id="3H8-PI-kbM"/>
                             <constraint firstItem="6Tk-OE-BBY" firstAttribute="trailing" secondItem="D2L-6h-jiD" secondAttribute="trailing" id="NsN-ga-AYU"/>
@@ -187,7 +187,7 @@
                                 </constraints>
                             </imageView>
                         </subviews>
-                        <color key="backgroundColor" red="0.89594483375549316" green="0.22789418697357178" blue="0.1831953227519989" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
+                        <color key="backgroundColor" cocoaTouchSystemColor="viewFlipsideBackgroundColor"/>
                         <constraints>
                             <constraint firstItem="zlT-6F-6JG" firstAttribute="trailing" secondItem="qxY-Hl-C1a" secondAttribute="trailing" id="2RL-46-d5f"/>
                             <constraint firstItem="qxY-Hl-C1a" firstAttribute="top" secondItem="zlT-6F-6JG" secondAttribute="top" id="3dE-yl-GU4"/>
