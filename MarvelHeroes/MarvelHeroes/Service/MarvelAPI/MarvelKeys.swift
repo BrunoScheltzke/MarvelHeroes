@@ -12,6 +12,7 @@ struct MarvelKeys {
     //URL Paths
     static let baseUrl = "https://gateway.marvel.com/v1/public"
     static let characters = "/characters"
+    static let comics = "/comics"
     
     //Amount of info on a request
     static let limit = "limit"

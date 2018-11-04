@@ -13,6 +13,7 @@ import AlamofireImage
 
 protocol MarvelAPIServiceProtocol {
     func requestCharacters(offset: Int?, amount: Int, completion: @escaping(Result<[Hero]>) -> Void)
+    func requestComics(of hero: Hero, offset: Int?, amount: Int, completion: @escaping(Result<[Comic]>) -> Void)
     func fetchImage(imgURL: String, completion: @escaping(Result<UIImage>) -> Void)
 }
 
@@ -30,13 +31,14 @@ class MarvelAPIService: MarvelAPIServiceProtocol {
     
     private let basePath = MarvelKeys.baseUrl
     private lazy var charactersPath = "\(basePath)\(MarvelKeys.characters)"
+    private lazy var comicsPath = "\(basePath)\(MarvelKeys.characters)/%@\(MarvelKeys.comics)"
     
-    func requestCharacters(offset: Int? = 0, amount: Int, completion: @escaping(Result<[Hero]>) -> Void) {
+    private func genericCollectionRequest<T: Decodable>(withPath path: String, offset: Int, amount: Int, completion: @escaping(Result<T>) -> Void) {
         var params = defaultParams
         params[MarvelKeys.limit] = amount
         params[MarvelKeys.offset] = offset
         
-        Alamofire.request(charactersPath,
+        Alamofire.request(path,
                           method: .get,
                           parameters: params,
                           encoding: URLEncoding(destination: .queryString),
@@ -50,8 +52,8 @@ class MarvelAPIService: MarvelAPIServiceProtocol {
                             completion(.failure(CustomError.invalidData))
                             return
                         }
-                        let result = try JSONDecoder().decode(MarvelResponse.self, from: data)
-                        completion(.success(result.heroes))
+                        let result = try JSONDecoder().decode(MarvelResponse<T>.self, from: data)
+                        completion(.success(result.results))
                     } catch {
                         completion(.failure(error))
                     }
@@ -59,6 +61,15 @@ class MarvelAPIService: MarvelAPIServiceProtocol {
                     completion(.failure(error))
                 }
         }
+    }
+    
+    func requestComics(of hero: Hero, offset: Int? = 0, amount: Int, completion: @escaping(Result<[Comic]>) -> Void) {
+        let path = String(format: comicsPath, "\(hero.id)")
+        genericCollectionRequest(withPath: path, offset: offset!, amount: amount, completion: completion)
+    }
+    
+    func requestCharacters(offset: Int? = 0, amount: Int, completion: @escaping(Result<[Hero]>) -> Void) {
+        genericCollectionRequest(withPath: charactersPath, offset: offset!, amount: amount, completion: completion)
     }
     
     //MARK: Image
@@ -90,4 +101,22 @@ class MarvelAPIService: MarvelAPIServiceProtocol {
 
 enum CustomError: Error {
     case invalidData
+}
+
+struct MarvelResponse<T: Decodable>: Decodable {
+    let results: T
+    
+    enum CodingKeys: String, CodingKey {
+        case data
+    }
+    
+    enum AdditionalInfoKeys: String, CodingKey {
+        case results
+    }
+    
+    init(from decoder: Decoder) throws {
+        let values = try decoder.container(keyedBy: CodingKeys.self)
+        let additionalInfo = try values.nestedContainer(keyedBy: AdditionalInfoKeys.self, forKey: .data)
+        results = try additionalInfo.decode(T.self, forKey: .results)
+    }
 }

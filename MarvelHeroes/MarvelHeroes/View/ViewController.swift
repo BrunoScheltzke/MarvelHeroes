@@ -10,6 +10,7 @@ import UIKit
 
 private let cellId = "heroCell"
 private let footerViewId = "footerView"
+private let heroDetailSegue = "heroDetailSegue"
 
 class ViewController: UIViewController {
     private var vm: HeroListViewModel!
@@ -31,6 +32,14 @@ class ViewController: UIViewController {
         
         spinner.color = UIColor.white
         spinner.hidesWhenStopped = true
+    }
+    
+    override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
+        if segue.identifier == heroDetailSegue,
+            let vc = segue.destination as? HeroDetailViewController,
+            let heroDetailVM = sender as? HeroDetailViewModel {
+            vc.heroDetailViewModel = heroDetailVM
+        }
     }
 }
 
@@ -71,6 +80,12 @@ extension ViewController: UICollectionViewDelegate {
             spinner.startAnimating()
             vm.fetchHeroes()
         }
+    }
+    
+    func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
+        let heroVM = vm.heroesCellViewModel[indexPath.row]
+        let heroDetailVM = heroVM.getHeroDetailViewModel()
+        performSegue(withIdentifier: heroDetailSegue, sender: heroDetailVM)
     }
 }
 

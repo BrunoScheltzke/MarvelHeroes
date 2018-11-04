@@ -1,32 +1,32 @@
 //
-//  HeroCellViewModel.swift
+//  ComicViewModel.swift
 //  MarvelHeroes
 //
-//  Created by Bruno Scheltzke on 02/11/18.
+//  Created by Bruno Scheltzke on 03/11/18.
 //  Copyright © 2018 Bruno Scheltzke. All rights reserved.
 //
 
 import UIKit
 
-final class HeroCellViewModel {
-    let name: String
+final class ComicViewModel {
+    let title: String
     var delegate: ImageDelegate?
     
-    private let hero: Hero
+    private let comic: Comic
     private let marvelService: MarvelAPIServiceProtocol
     
-    init(marvelService: MarvelAPIServiceProtocol, hero: Hero) {
-        self.hero = hero
+    init(marvelService: MarvelAPIServiceProtocol, comic: Comic) {
+        self.comic = comic
         self.marvelService = marvelService
-        self.name = hero.name ?? "Name unavailable"
+        self.title = comic.title ?? "Title unavailable"
     }
     
     func startLoadingImage() {
-        guard let imageURL = hero.imageURL else {
+        guard let imageURL = comic.imageURL else {
             delegate?.finishedLoadingImage(#imageLiteral(resourceName: "marvellogo"))
             return
         }
-        
+
         marvelService.fetchImage(imgURL: imageURL) { [unowned self] result in
             switch result {
             case .failure: self.delegate?.finishedLoadingImage(#imageLiteral(resourceName: "marvellogo"))
@@ -35,12 +35,4 @@ final class HeroCellViewModel {
             }
         }
     }
-    
-    func getHeroDetailViewModel() -> HeroDetailViewModel {
-        return HeroDetailViewModel(marvelService: marvelService, hero: hero)
-    }
-}
-
-protocol ImageDelegate {
-    func finishedLoadingImage(_ image: UIImage)
 }
