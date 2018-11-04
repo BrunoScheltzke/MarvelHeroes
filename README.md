@@ -4,7 +4,7 @@
 
 <img src="https://github.com/BrunoScheltzke/MarvelHeroes/blob/master/heroList.PNG" width="250">        <img src="https://github.com/BrunoScheltzke/MarvelHeroes/blob/master/heroDetail.PNG" width="250">
 
-## Installation
+## Setup
 #### Clone the project
 `$ git clone https://github.com/BrunoScheltzke/MarvelHeroes.git`
 
