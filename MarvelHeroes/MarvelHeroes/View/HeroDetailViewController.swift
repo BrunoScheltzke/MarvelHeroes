@@ -112,6 +112,8 @@ extension HeroDetailViewController: UIScrollViewDelegate, UITableViewDelegate {
     
     // If last cell is about to be displayed, try to fetch extra heroes to present to user
     func tableView(_ tableView: UITableView, willDisplay cell: UITableViewCell, forRowAt indexPath: IndexPath) {
+        guard !heroDetailViewModel.hasReachedMaxAmountOfComics else { return }
+        
         let numRows = tableView.numberOfRows(inSection: 1)
         if (indexPath.row == numRows - 1) {
             spinner.startAnimating()

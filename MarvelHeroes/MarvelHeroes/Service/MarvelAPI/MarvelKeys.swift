@@ -22,6 +22,6 @@ struct MarvelKeys {
     static let timestamp = "ts"
     static let hash = "hash"
     static let publicKey = "apikey"
-    static let marvelPublicKey = "d3e088896f979b05e097c83ba10f37c5"
-    static let marvelPrivateKey = "683b3c9d67c1bc920f58f414c991817fdcd1bd87"
+    static let marvelPublicKey = "e22382bc6094f500ef3b016d73d76e07"
+    static let marvelPrivateKey = "eac21dd5d969623818261c2e5edb39b66e13ee9c"
 }

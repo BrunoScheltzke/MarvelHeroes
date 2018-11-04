@@ -14,6 +14,8 @@ final class HeroListViewModel {
     
     private let defaultAmountOfHeroes: Int = 20
     
+    var hasReachedMaxAmountOfHeroes: Bool = false
+    
     var delegate: HeroListDelegate?
     var heroesCellViewModel: [HeroCellViewModel] = []
     
@@ -27,7 +29,7 @@ final class HeroListViewModel {
     }
     
     func fetchHeroes() {
-        guard !isFetching else { return }
+        guard !isFetching, !hasReachedMaxAmountOfHeroes else { return }
         isFetching = true
         
         marvelService.requestCharacters(offset: heroesCellViewModel.count,
@@ -36,7 +38,9 @@ final class HeroListViewModel {
             case .failure(let error):
                 self.delegate?.received(error)
                 
-            case .success(let newHeroes):
+            case .success(let result):
+                let newHeroes = result.0
+                self.hasReachedMaxAmountOfHeroes = result.hasReachedMaxAmount
                 let newHeroesVM = newHeroes.map { HeroCellViewModel(marvelService: self.marvelService, hero: $0) }
                 self.heroesCellViewModel.append(contentsOf: newHeroesVM)
                 let indexPaths = self.getIndexPathsToInsert(newHeroes: newHeroesVM)

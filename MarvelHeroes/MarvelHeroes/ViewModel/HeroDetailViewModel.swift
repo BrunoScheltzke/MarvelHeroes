@@ -14,6 +14,10 @@ final class HeroDetailViewModel {
     var comicViewModels: [ComicViewModel] = []
     var delegate: HeroDetailDelegate?
     
+    var hasReachedMaxAmountOfComics: Bool = false
+    
+    private var isFetching: Bool = false
+    
     private let defaultAmountOfComics = 10
     
     private let hero: Hero
@@ -37,10 +41,17 @@ final class HeroDetailViewModel {
     }
     
     func fetchHeroComics() {
+        guard !isFetching, !hasReachedMaxAmountOfComics else { return }
+        
+        isFetching = true
+        
         marvelService.requestComics(of: hero, offset: comicViewModels.count, amount: defaultAmountOfComics) { [unowned self] result in
+            self.isFetching = false
             switch result {
             case .failure(let error): self.delegate?.received(error)
-            case .success(let newComics):
+            case .success(let result):
+                let newComics = result.0
+                self.hasReachedMaxAmountOfComics = result.hasReachedMaxAmount
                 let newComicsVM = newComics.map { ComicViewModel(marvelService: self.marvelService, comic: $0) }
                 self.comicViewModels.append(contentsOf: newComicsVM)
                 let indexPaths = self.getIndexPathsToInsert(newComics: newComicsVM)

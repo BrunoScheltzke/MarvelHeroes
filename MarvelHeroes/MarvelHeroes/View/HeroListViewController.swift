@@ -100,6 +100,8 @@ extension HeroListViewController: UICollectionViewDelegateFlowLayout {
 extension HeroListViewController: UICollectionViewDelegate {
     // If last cell is about to be displayed, try to fetch extra heroes to present to user
     func collectionView(_ collectionView: UICollectionView, willDisplay cell: UICollectionViewCell, forItemAt indexPath: IndexPath) {
+        guard !vm.hasReachedMaxAmountOfHeroes else { return }
+        
         let numRows = collectionView.numberOfItems(inSection: 0)
         if (indexPath.row == numRows - 1) {
             spinner.startAnimating()

@@ -12,8 +12,8 @@ import Alamofire
 import AlamofireImage
 
 protocol MarvelAPIServiceProtocol {
-    func requestCharacters(offset: Int?, amount: Int, completion: @escaping(Result<[Hero]>) -> Void)
-    func requestComics(of hero: Hero, offset: Int?, amount: Int, completion: @escaping(Result<[Comic]>) -> Void)
+    func requestCharacters(offset: Int?, amount: Int, completion: @escaping(Result<([Hero], hasReachedMaxAmount: Bool)>) -> Void)
+    func requestComics(of hero: Hero, offset: Int?, amount: Int, completion: @escaping(Result<([Comic], hasReachedMaxAmount: Bool)>) -> Void)
     func fetchImage(imgURL: String, with size: MarvelImageSize, completion: @escaping(Result<UIImage>) -> Void)
 }
 
@@ -43,13 +43,13 @@ class MarvelAPIService: MarvelAPIServiceProtocol {
     // Handles image caching
     private let imageCache = AutoPurgingImageCache()
     
-    func requestComics(of hero: Hero, offset: Int? = 0, amount: Int, completion: @escaping(Result<[Comic]>) -> Void) {
-        let path = String(format: comicsPath, "\(hero.id)")
-        performGenericRequest(withPath: path, offset: offset!, amount: amount, completion: completion)
+    func requestCharacters(offset: Int? = 0, amount: Int, completion: @escaping(Result<([Hero], hasReachedMaxAmount: Bool)>) -> Void) {
+        performGenericRequest(withPath: charactersPath, offset: offset!, amount: amount, completion: completion)
     }
     
-    func requestCharacters(offset: Int? = 0, amount: Int, completion: @escaping(Result<[Hero]>) -> Void) {
-        performGenericRequest(withPath: charactersPath, offset: offset!, amount: amount, completion: completion)
+    func requestComics(of hero: Hero, offset: Int? = 0, amount: Int, completion: @escaping(Result<([Comic], hasReachedMaxAmount: Bool)>) -> Void) {
+        let path = String(format: comicsPath, "\(hero.id)")
+        performGenericRequest(withPath: path, offset: offset!, amount: amount, completion: completion)
     }
     
     func fetchImage(imgURL: String, with size: MarvelImageSize, completion: @escaping(Result<UIImage>) -> Void) {
@@ -76,9 +76,14 @@ class MarvelAPIService: MarvelAPIServiceProtocol {
         }
     }
     
-    // Results returned by the API endpoints have the same general format, no matter which entity type the endpoint returns. Every successful call will return a wrapper object, which contains metadata about the call and a container object, which displays pagination information and an array of the results returned by this call.
-    // The MarvelResponse helper struct was created to deal with that general response. It decodes the data(wrapper object) from the request and then gets the results which will be an array of some entity.
-    private func performGenericRequest<T: Decodable>(withPath path: String, offset: Int, amount: Int, completion: @escaping(Result<T>) -> Void) {
+    /// Results returned by the API endpoints have the same general format, no matter which entity type the endpoint returns. Every successful call will return a wrapper object, which contains metadata about the call and a container object, which displays pagination information and an array of the results returned by this call. The MarvelResponse helper struct was created to deal with that general response. It decodes the data(wrapper object) from the request and then gets the results which will be an array of some entity.
+    ///
+    /// - Parameters:
+    ///   - path: the path url
+    ///   - offset: the start point from where to get the amount of data
+    ///   - amount: the amount of data to retrive
+    ///   - completion: returns an array of the model requested and a boolean that informs if has reached the maximum amount of data of that model
+    private func performGenericRequest<T: Decodable>(withPath path: String, offset: Int, amount: Int, completion: @escaping(Result<(T, hasReachedMaxAmount: Bool)>) -> Void) {
         var params = defaultParams
         params[MarvelKeys.limit] = amount
         params[MarvelKeys.offset] = offset
@@ -98,7 +103,10 @@ class MarvelAPIService: MarvelAPIServiceProtocol {
                             return
                         }
                         let result = try JSONDecoder().decode(MarvelResponse<T>.self, from: data)
-                        completion(.success(result.results))
+                        
+                        let hasReachedMaxAmount = result.total <= offset + amount
+                        
+                        completion(.success((result.results, hasReachedMaxAmount)))
                     } catch {
                         completion(.failure(error))
                     }
@@ -116,6 +124,7 @@ enum CustomError: Error {
 // Helper struct created to deal with response from Marvel API
 struct MarvelResponse<T: Decodable>: Decodable {
     let results: T
+    let total: Int
     
     enum CodingKeys: String, CodingKey {
         case data
@@ -123,11 +132,13 @@ struct MarvelResponse<T: Decodable>: Decodable {
     
     enum AdditionalInfoKeys: String, CodingKey {
         case results
+        case total
     }
     
     init(from decoder: Decoder) throws {
         let values = try decoder.container(keyedBy: CodingKeys.self)
         let additionalInfo = try values.nestedContainer(keyedBy: AdditionalInfoKeys.self, forKey: .data)
         results = try additionalInfo.decode(T.self, forKey: .results)
+        total = try additionalInfo.decode(Int.self, forKey: .total)
     }
 }
