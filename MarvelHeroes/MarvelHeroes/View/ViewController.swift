@@ -100,8 +100,10 @@ extension ViewController: UICollectionViewDelegate {
 }
 
 extension ViewController: HeroListDelegate {
-    func present(_ error: Error) {
-        
+    func received(_ error: Error) {
+        present(error: error)
+        view.unlock()
+        spinner.stopAnimating()
     }
     
     func receivedHeroes(indexPathsToInsert: [IndexPath]) {

@@ -27,9 +27,9 @@ final class HeroDetailViewModel {
     }
     
     func fetchHeroComics() {
-        marvelService.requestComics(of: hero, offset: comicViewModels.count, amount: defaultAmountOfComics) { result in
+        marvelService.requestComics(of: hero, offset: comicViewModels.count, amount: defaultAmountOfComics) { [unowned self] result in
             switch result {
-            case .failure(let error): print(error)
+            case .failure(let error): self.delegate?.received(error)
             case .success(let newComics):
                 let newComicsVM = newComics.map { ComicViewModel(marvelService: self.marvelService, comic: $0) }
                 self.comicViewModels.append(contentsOf: newComicsVM)
@@ -63,4 +63,5 @@ final class HeroDetailViewModel {
 
 protocol HeroDetailDelegate: ImageDelegate {
     func finishedFetchingHeroComics(with indexPaths: [IndexPath])
+    func received(_ error: Error)
 }

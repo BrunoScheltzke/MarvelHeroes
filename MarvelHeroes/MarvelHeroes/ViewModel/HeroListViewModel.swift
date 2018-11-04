@@ -28,7 +28,7 @@ final class HeroListViewModel {
                                         amount: defaultAmountOfHeroes) { [unowned self] result in
             switch result {
             case .failure(let error):
-                self.delegate?.present(error)
+                self.delegate?.received(error)
             case .success(let newHeroes):
                 let newHeroesVM = newHeroes.map { HeroCellViewModel(marvelService: self.marvelService, hero: $0) }
                 self.heroesCellViewModel.append(contentsOf: newHeroesVM)
@@ -46,6 +46,6 @@ final class HeroListViewModel {
 }
 
 protocol HeroListDelegate {
-    func present(_ error: Error)
+    func received(_ error: Error)
     func receivedHeroes(indexPathsToInsert: [IndexPath])
 }

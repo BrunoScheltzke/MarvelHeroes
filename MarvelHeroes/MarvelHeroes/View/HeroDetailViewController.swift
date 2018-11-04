@@ -48,8 +48,15 @@ class HeroDetailViewController: UIViewController {
 }
 
 extension HeroDetailViewController: HeroDetailDelegate {
+    func received(_ error: Error) {
+        view.unlock()
+        spinner.stopAnimating()
+        present(error: error)
+    }
+    
     func finishedFetchingHeroComics(with indexPaths: [IndexPath]) {
         view.unlock()
+        spinner.stopAnimating()
         tableView.beginUpdates()
         tableView.insertRows(at: indexPaths, with: .automatic)
         tableView.endUpdates()

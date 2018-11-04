@@ -30,6 +30,7 @@
 		84A4DC2D218E656800072FB6 /* ComicTableViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 84A4DC2C218E656800072FB6 /* ComicTableViewCell.swift */; };
 		84A4DC2F218E657E00072FB6 /* ComicViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 84A4DC2E218E657E00072FB6 /* ComicViewModel.swift */; };
 		84A4DC31218E6CEB00072FB6 /* Comic+Marvel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 84A4DC30218E6CEB00072FB6 /* Comic+Marvel.swift */; };
+		84A4DC33218E868300072FB6 /* UIViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 84A4DC32218E868300072FB6 /* UIViewController.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -80,6 +81,7 @@
 		84A4DC2C218E656800072FB6 /* ComicTableViewCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ComicTableViewCell.swift; sourceTree = "<group>"; };
 		84A4DC2E218E657E00072FB6 /* ComicViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ComicViewModel.swift; sourceTree = "<group>"; };
 		84A4DC30218E6CEB00072FB6 /* Comic+Marvel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Comic+Marvel.swift"; sourceTree = "<group>"; };
+		84A4DC32218E868300072FB6 /* UIViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UIViewController.swift; sourceTree = "<group>"; };
 		F0F0429A3C036A6AB2A82FA8 /* Pods_MarvelHeroes.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_MarvelHeroes.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
@@ -209,6 +211,7 @@
 			children = (
 				8493AD62218DFCFF0034513D /* LayerExtension.swift */,
 				8493AD5E218DEFAA0034513D /* ViewExtension.swift */,
+				84A4DC32218E868300072FB6 /* UIViewController.swift */,
 			);
 			path = Extensions;
 			sourceTree = "<group>";
@@ -420,6 +423,7 @@
 			files = (
 				84049183218D23E800E59ACD /* HeroListViewModel.swift in Sources */,
 				8493AD5D218DEAB20034513D /* HeroCollectionViewCell.swift in Sources */,
+				84A4DC33218E868300072FB6 /* UIViewController.swift in Sources */,
 				8429EDE1218C8E4300265E11 /* ViewController.swift in Sources */,
 				8429EE0D218C907F00265E11 /* MarvelAPIService.swift in Sources */,
 				8404917C218CF23C00E59ACD /* Hero+Marvel.swift in Sources */,
