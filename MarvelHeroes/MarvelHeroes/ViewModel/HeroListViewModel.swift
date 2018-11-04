@@ -21,23 +21,32 @@ final class HeroListViewModel {
         self.marvelService = marvelService
     }
     
+    func getHeroDetailViewModel(forRow row: Int) -> HeroDetailViewModel {
+        let heroVM = heroesCellViewModel[row]
+        return heroVM.getHeroDetailViewModel()
+    }
+    
     func fetchHeroes() {
         guard !isFetching else { return }
+        isFetching = true
         
         marvelService.requestCharacters(offset: heroesCellViewModel.count,
                                         amount: defaultAmountOfHeroes) { [unowned self] result in
             switch result {
             case .failure(let error):
                 self.delegate?.received(error)
+                
             case .success(let newHeroes):
                 let newHeroesVM = newHeroes.map { HeroCellViewModel(marvelService: self.marvelService, hero: $0) }
                 self.heroesCellViewModel.append(contentsOf: newHeroesVM)
                 let indexPaths = self.getIndexPathsToInsert(newHeroes: newHeroesVM)
                 self.delegate?.receivedHeroes(indexPathsToInsert: indexPaths)
             }
+            self.isFetching = false
         }
     }
     
+    /// Calculate index paths that collection view needs to reload based on new heroes
     private func getIndexPathsToInsert(newHeroes: [HeroCellViewModel]) -> [IndexPath] {
         let startIndex = heroesCellViewModel.count - newHeroes.count
         let endIndex = startIndex + newHeroes.count

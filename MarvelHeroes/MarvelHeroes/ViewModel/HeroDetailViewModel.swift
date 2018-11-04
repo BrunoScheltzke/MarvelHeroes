@@ -20,8 +20,18 @@ final class HeroDetailViewModel {
     private let marvelService: MarvelAPIServiceProtocol
     
     init(marvelService: MarvelAPIServiceProtocol, hero: Hero) {
-        self.name = hero.name ?? "Name unavailable"
-        self.description = hero.description ?? "Description unavailable"
+        if let name = hero.name, !name.isEmpty {
+            self.name = name
+        } else {
+            self.name = "Name unavailable"
+        }
+        
+        if let description = hero.description, !description.isEmpty {
+            self.description = description
+        } else {
+            self.description = "Description unavailable"
+        }
+        
         self.hero = hero
         self.marvelService = marvelService
     }
@@ -39,6 +49,7 @@ final class HeroDetailViewModel {
         }
     }
     
+    /// Calculate index paths that collection view needs to reload based on new comics
     private func getIndexPathsToInsert(newComics: [ComicViewModel]) -> [IndexPath] {
         let startIndex = comicViewModels.count - newComics.count
         let endIndex = startIndex + newComics.count
@@ -54,8 +65,7 @@ final class HeroDetailViewModel {
         marvelService.fetchImage(imgURL: imageURL, with: .heroDetail) { [unowned self] result in
             switch result {
             case .failure: self.delegate?.finishedLoadingImage(#imageLiteral(resourceName: "marvellogo"))
-            case .success(let image):
-                self.delegate?.finishedLoadingImage(image)
+            case .success(let image): self.delegate?.finishedLoadingImage(image)
             }
         }
     }

@@ -15,12 +15,12 @@ class HeroDetailViewController: UIViewController {
     var heroDetailViewModel: HeroDetailViewModel!
     
     @IBOutlet weak var heroImageView: UIImageView!
-    
     @IBOutlet weak var tableView: UITableView!
     @IBOutlet weak var heroImageViewHeightConstraint: NSLayoutConstraint!
     
     private let spinner = UIActivityIndicatorView(style: .gray)
     
+    // The variant sizes the header view can be
     let headerViewDefaultHeight: CGFloat = 300
     let headerViewMinimunHeight: CGFloat = 100
     let headerViewMaxHeight: CGFloat = 400
@@ -28,6 +28,11 @@ class HeroDetailViewController: UIViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
         
+        setupTableView()
+        setupViewModel()
+    }
+    
+    func setupTableView() {
         tableView.dataSource = self
         tableView.delegate = self
         tableView.contentInset = UIEdgeInsets(top: headerViewDefaultHeight, left: 0, bottom: 0, right: 0)
@@ -35,15 +40,17 @@ class HeroDetailViewController: UIViewController {
         tableView.estimatedRowHeight = UITableView.automaticDimension
         tableView.rowHeight = UITableView.automaticDimension
         
-        heroImageView.lock()
+        spinner.color = .white
+        tableView.tableFooterView = spinner
+    }
+    
+    func setupViewModel() {
         heroDetailViewModel.delegate = self
         heroDetailViewModel.startLoadingImage()
         view.lock()
+        heroImageView.lock()
         heroDetailViewModel.fetchHeroComics()
         title = heroDetailViewModel.name
-        
-        spinner.color = .white
-        tableView.tableFooterView = spinner
     }
 }
 
@@ -77,7 +84,6 @@ extension HeroDetailViewController: UITableViewDataSource {
         switch indexPath.section {
         case 0:
             let cell = tableView.dequeueReusableCell(withIdentifier: descriptionCell, for: indexPath)
-            cell.textLabel?.numberOfLines = 0
             cell.textLabel?.text = heroDetailViewModel.description
             return cell
         case 1:
@@ -97,13 +103,14 @@ extension HeroDetailViewController: UITableViewDataSource {
     }
 }
 
-// MARK: Scroll header animation
 extension HeroDetailViewController: UIScrollViewDelegate, UITableViewDelegate {
+    // MARK: Scroll header animation
     func scrollViewDidScroll(_ scrollView: UIScrollView) {
         let y = headerViewDefaultHeight - (scrollView.contentOffset.y + headerViewDefaultHeight)
         heroImageViewHeightConstraint.constant = min(max(y, headerViewMinimunHeight), headerViewMaxHeight)
     }
     
+    // If last cell is about to be displayed, try to fetch extra heroes to present to user
     func tableView(_ tableView: UITableView, willDisplay cell: UITableViewCell, forRowAt indexPath: IndexPath) {
         let numRows = tableView.numberOfRows(inSection: 1)
         if (indexPath.row == numRows - 1) {

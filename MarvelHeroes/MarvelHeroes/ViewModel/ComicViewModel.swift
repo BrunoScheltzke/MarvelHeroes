@@ -19,7 +19,12 @@ final class ComicViewModel {
     init(marvelService: MarvelAPIServiceProtocol, comic: Comic) {
         self.comic = comic
         self.marvelService = marvelService
-        self.title = comic.title ?? "Title unavailable"
+        
+        if let title = comic.title, !title.isEmpty {
+            self.title = title
+        } else {
+            self.title = "Title unavailable"
+        }
     }
     
     func startLoadingImage() {

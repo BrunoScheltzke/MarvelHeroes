@@ -1,5 +1,5 @@
 //
-//  ViewController.swift
+//  HeroListViewController.swift
 //  MarvelHeroes
 //
 //  Created by Bruno Scheltzke on 02/11/18.
@@ -12,27 +12,39 @@ private let cellId = "heroCell"
 private let footerViewId = "footerView"
 private let heroDetailSegue = "heroDetailSegue"
 
-class ViewController: UIViewController {
+class HeroListViewController: UIViewController {
     private var vm: HeroListViewModel!
     
     @IBOutlet weak var collectionView: UICollectionView!
+    // Activity indicator to represent the load of extra heroes
     private let spinner = UIActivityIndicatorView(style: .gray)
     
     override func viewDidLoad() {
         super.viewDidLoad()
         
         let marvelService = MarvelAPIService()
-        vm = HeroListViewModel(marvelService: marvelService)
-        vm.delegate = self
+        let viewModel = HeroListViewModel(marvelService: marvelService)
         
+        setupViewModel(viewModel)
+        setupCollectionView()
+        setupSpinner()
+    }
+    
+    func setupCollectionView() {
         collectionView.delegate = self
         collectionView.dataSource = self
-        
-        view.lock()
-        vm.fetchHeroes()
-        
+    }
+    
+    func setupSpinner() {
         spinner.color = UIColor.white
         spinner.hidesWhenStopped = true
+    }
+    
+    func setupViewModel(_ viewModel: HeroListViewModel) {
+        vm = viewModel
+        vm.delegate = self
+        view.lock()
+        vm.fetchHeroes()
     }
     
     override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
@@ -44,7 +56,7 @@ class ViewController: UIViewController {
     }
 }
 
-extension ViewController: UICollectionViewDataSource {
+extension HeroListViewController: UICollectionViewDataSource {
     func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
         return vm.heroesCellViewModel.count
     }
@@ -57,6 +69,7 @@ extension ViewController: UICollectionViewDataSource {
         return cell
     }
     
+    // Adds activity indicator at bottom of collection view to present a loading animation while fetching extra heroes.
     func collectionView(_ collectionView: UICollectionView, viewForSupplementaryElementOfKind kind: String, at indexPath: IndexPath) -> UICollectionReusableView {
         switch kind {
         case UICollectionView.elementKindSectionFooter:
@@ -74,7 +87,8 @@ extension ViewController: UICollectionViewDataSource {
     }
 }
 
-extension ViewController: UICollectionViewDelegateFlowLayout {
+extension HeroListViewController: UICollectionViewDelegateFlowLayout {
+    // Calculating collection view cell size to make sure two collumns are presented
     func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, sizeForItemAt indexPath: IndexPath) -> CGSize {
         let padding: CGFloat =  50
         let collectionViewSize = collectionView.frame.size.width - padding
@@ -83,7 +97,8 @@ extension ViewController: UICollectionViewDelegateFlowLayout {
     }
 }
 
-extension ViewController: UICollectionViewDelegate {
+extension HeroListViewController: UICollectionViewDelegate {
+    // If last cell is about to be displayed, try to fetch extra heroes to present to user
     func collectionView(_ collectionView: UICollectionView, willDisplay cell: UICollectionViewCell, forItemAt indexPath: IndexPath) {
         let numRows = collectionView.numberOfItems(inSection: 0)
         if (indexPath.row == numRows - 1) {
@@ -93,17 +108,16 @@ extension ViewController: UICollectionViewDelegate {
     }
     
     func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
-        let heroVM = vm.heroesCellViewModel[indexPath.row]
-        let heroDetailVM = heroVM.getHeroDetailViewModel()
+        let heroDetailVM = vm.getHeroDetailViewModel(forRow: indexPath.row)
         performSegue(withIdentifier: heroDetailSegue, sender: heroDetailVM)
     }
 }
 
-extension ViewController: HeroListDelegate {
+extension HeroListViewController: HeroListDelegate {
     func received(_ error: Error) {
-        present(error: error)
         view.unlock()
         spinner.stopAnimating()
+        present(error: error)
     }
     
     func receivedHeroes(indexPathsToInsert: [IndexPath]) {

@@ -24,10 +24,15 @@ enum MarvelImageSize: String {
 }
 
 class MarvelAPIService: MarvelAPIServiceProtocol {
+    private let basePath = MarvelKeys.baseUrl
+    private lazy var charactersPath = "\(basePath)\(MarvelKeys.characters)"
+    private lazy var comicsPath = "\(basePath)\(MarvelKeys.characters)/%@\(MarvelKeys.comics)"
+    
+    // Every request has to be authenticated with public and private keys
+    // Defines default parameters with authentication to make it available for every request
     private lazy var defaultParams: [String: Any] = {
         let ts = "\(Date().timeIntervalSinceNow)"
         let hash = "\(ts)\(MarvelKeys.marvelPrivateKey)\(MarvelKeys.marvelPublicKey)".md5()
-        
         return [
             MarvelKeys.timestamp: ts,
             MarvelKeys.hash: hash,
@@ -35,11 +40,45 @@ class MarvelAPIService: MarvelAPIServiceProtocol {
         ]
     }()
     
-    private let basePath = MarvelKeys.baseUrl
-    private lazy var charactersPath = "\(basePath)\(MarvelKeys.characters)"
-    private lazy var comicsPath = "\(basePath)\(MarvelKeys.characters)/%@\(MarvelKeys.comics)"
+    // Handles image caching
+    private let imageCache = AutoPurgingImageCache()
     
-    private func genericCollectionRequest<T: Decodable>(withPath path: String, offset: Int, amount: Int, completion: @escaping(Result<T>) -> Void) {
+    func requestComics(of hero: Hero, offset: Int? = 0, amount: Int, completion: @escaping(Result<[Comic]>) -> Void) {
+        let path = String(format: comicsPath, "\(hero.id)")
+        performGenericRequest(withPath: path, offset: offset!, amount: amount, completion: completion)
+    }
+    
+    func requestCharacters(offset: Int? = 0, amount: Int, completion: @escaping(Result<[Hero]>) -> Void) {
+        performGenericRequest(withPath: charactersPath, offset: offset!, amount: amount, completion: completion)
+    }
+    
+    func fetchImage(imgURL: String, with size: MarvelImageSize, completion: @escaping(Result<UIImage>) -> Void) {
+        let imgPath = String(format: imgURL, size.rawValue)
+        if let cachedImg = imageCache.image(withIdentifier: imgPath) {
+            completion(.success(cachedImg))
+            return
+        }
+        
+        Alamofire.request(imgPath,
+                          method: .get,
+                          parameters: defaultParams,
+                          encoding: URLEncoding(destination: .queryString),
+                          headers: nil)
+            .validate()
+            .responseImage { [unowned self] response in
+                switch response.result {
+                case .success(let img):
+                    self.imageCache.add(img, withIdentifier: imgURL)
+                    completion(.success(img))
+                case .failure(let error):
+                    completion(.failure(error))
+                }
+        }
+    }
+    
+    // Results returned by the API endpoints have the same general format, no matter which entity type the endpoint returns. Every successful call will return a wrapper object, which contains metadata about the call and a container object, which displays pagination information and an array of the results returned by this call.
+    // The MarvelResponse helper struct was created to deal with that general response. It decodes the data(wrapper object) from the request and then gets the results which will be an array of some entity.
+    private func performGenericRequest<T: Decodable>(withPath path: String, offset: Int, amount: Int, completion: @escaping(Result<T>) -> Void) {
         var params = defaultParams
         params[MarvelKeys.limit] = amount
         params[MarvelKeys.offset] = offset
@@ -68,48 +107,13 @@ class MarvelAPIService: MarvelAPIServiceProtocol {
                 }
         }
     }
-    
-    func requestComics(of hero: Hero, offset: Int? = 0, amount: Int, completion: @escaping(Result<[Comic]>) -> Void) {
-        let path = String(format: comicsPath, "\(hero.id)")
-        genericCollectionRequest(withPath: path, offset: offset!, amount: amount, completion: completion)
-    }
-    
-    func requestCharacters(offset: Int? = 0, amount: Int, completion: @escaping(Result<[Hero]>) -> Void) {
-        genericCollectionRequest(withPath: charactersPath, offset: offset!, amount: amount, completion: completion)
-    }
-    
-    //MARK: Image
-    private let imageCache = AutoPurgingImageCache()
-    
-    func fetchImage(imgURL: String, with size: MarvelImageSize, completion: @escaping(Result<UIImage>) -> Void) {
-        let imgPath = String(format: imgURL, size.rawValue)
-        if let cachedImg = imageCache.image(withIdentifier: imgPath) {
-            completion(.success(cachedImg))
-            return
-        }
-        
-        Alamofire.request(imgPath,
-                     method: .get,
-                     parameters: defaultParams,
-                     encoding: URLEncoding(destination: .queryString),
-                     headers: nil)
-            .validate()
-            .responseImage { [unowned self] response in
-                switch response.result {
-                case .success(let img):
-                    self.imageCache.add(img, withIdentifier: imgURL)
-                    completion(.success(img))
-                case .failure(let error):
-                    completion(.failure(error))
-                }
-        }
-    }
 }
 
 enum CustomError: Error {
     case invalidData
 }
 
+// Helper struct created to deal with response from Marvel API
 struct MarvelResponse<T: Decodable>: Decodable {
     let results: T
     
