@@ -30,6 +30,6 @@ extension Hero {
         let thumbnailInfo = try values.nestedContainer(keyedBy: ThumbnailInfo.self, forKey: .thumbnail)
         let pathToImage = try thumbnailInfo.decode(String.self, forKey: .path)
         let imgExtenstion = try thumbnailInfo.decode(String.self, forKey: .imgExtension)
-        imageURL = pathToImage + "/standard_medium." + imgExtenstion
+        imageURL = pathToImage + "/%@." + imgExtenstion
     }
 }

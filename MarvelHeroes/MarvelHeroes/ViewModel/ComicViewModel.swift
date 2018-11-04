@@ -11,6 +11,7 @@ import UIKit
 final class ComicViewModel {
     let title: String
     var delegate: ImageDelegate?
+    let placeholderImage: UIImage = #imageLiteral(resourceName: "marvellogo")
     
     private let comic: Comic
     private let marvelService: MarvelAPIServiceProtocol
@@ -27,7 +28,7 @@ final class ComicViewModel {
             return
         }
 
-        marvelService.fetchImage(imgURL: imageURL) { [unowned self] result in
+        marvelService.fetchImage(imgURL: imageURL, with: .comicList) { [unowned self] result in
             switch result {
             case .failure: self.delegate?.finishedLoadingImage(#imageLiteral(resourceName: "marvellogo"))
             case .success(let image):

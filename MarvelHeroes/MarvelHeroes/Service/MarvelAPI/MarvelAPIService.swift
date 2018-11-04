@@ -14,7 +14,13 @@ import AlamofireImage
 protocol MarvelAPIServiceProtocol {
     func requestCharacters(offset: Int?, amount: Int, completion: @escaping(Result<[Hero]>) -> Void)
     func requestComics(of hero: Hero, offset: Int?, amount: Int, completion: @escaping(Result<[Comic]>) -> Void)
-    func fetchImage(imgURL: String, completion: @escaping(Result<UIImage>) -> Void)
+    func fetchImage(imgURL: String, with size: MarvelImageSize, completion: @escaping(Result<UIImage>) -> Void)
+}
+
+enum MarvelImageSize: String {
+    case comicList = "portrait_medium"
+    case heroList = "portrait_xlarge"
+    case heroDetail = "landscape_xlarge"
 }
 
 class MarvelAPIService: MarvelAPIServiceProtocol {
@@ -75,13 +81,14 @@ class MarvelAPIService: MarvelAPIServiceProtocol {
     //MARK: Image
     private let imageCache = AutoPurgingImageCache()
     
-    func fetchImage(imgURL: String, completion: @escaping(Result<UIImage>) -> Void) {
-        if let cachedImg = imageCache.image(withIdentifier: imgURL) {
+    func fetchImage(imgURL: String, with size: MarvelImageSize, completion: @escaping(Result<UIImage>) -> Void) {
+        let imgPath = String(format: imgURL, size.rawValue)
+        if let cachedImg = imageCache.image(withIdentifier: imgPath) {
             completion(.success(cachedImg))
             return
         }
         
-        Alamofire.request(imgURL,
+        Alamofire.request(imgPath,
                      method: .get,
                      parameters: defaultParams,
                      encoding: URLEncoding(destination: .queryString),

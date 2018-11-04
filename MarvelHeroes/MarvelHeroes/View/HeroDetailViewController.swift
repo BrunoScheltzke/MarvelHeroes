@@ -38,6 +38,7 @@ class HeroDetailViewController: UIViewController {
         heroImageView.lock()
         heroDetailViewModel.delegate = self
         heroDetailViewModel.startLoadingImage()
+        view.lock()
         heroDetailViewModel.fetchHeroComics()
         title = heroDetailViewModel.name
         
@@ -48,6 +49,7 @@ class HeroDetailViewController: UIViewController {
 
 extension HeroDetailViewController: HeroDetailDelegate {
     func finishedFetchingHeroComics(with indexPaths: [IndexPath]) {
+        view.unlock()
         tableView.beginUpdates()
         tableView.insertRows(at: indexPaths, with: .automatic)
         tableView.endUpdates()

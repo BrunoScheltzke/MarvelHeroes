@@ -11,6 +11,7 @@ import UIKit
 final class HeroCellViewModel {
     let name: String
     var delegate: ImageDelegate?
+    let placeholderImage: UIImage = #imageLiteral(resourceName: "marvellogo")
     
     private let hero: Hero
     private let marvelService: MarvelAPIServiceProtocol
@@ -27,7 +28,7 @@ final class HeroCellViewModel {
             return
         }
         
-        marvelService.fetchImage(imgURL: imageURL) { [unowned self] result in
+        marvelService.fetchImage(imgURL: imageURL, with: .heroList) { [unowned self] result in
             switch result {
             case .failure: self.delegate?.finishedLoadingImage(#imageLiteral(resourceName: "marvellogo"))
             case .success(let image):

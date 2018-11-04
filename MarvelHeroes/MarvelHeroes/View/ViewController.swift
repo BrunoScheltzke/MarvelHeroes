@@ -28,6 +28,7 @@ class ViewController: UIViewController {
         collectionView.delegate = self
         collectionView.dataSource = self
         
+        view.lock()
         vm.fetchHeroes()
         
         spinner.color = UIColor.white
@@ -73,6 +74,15 @@ extension ViewController: UICollectionViewDataSource {
     }
 }
 
+extension ViewController: UICollectionViewDelegateFlowLayout {
+    func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, sizeForItemAt indexPath: IndexPath) -> CGSize {
+        let padding: CGFloat =  50
+        let collectionViewSize = collectionView.frame.size.width - padding
+        
+        return CGSize(width: collectionViewSize/2, height: collectionViewSize)
+    }
+}
+
 extension ViewController: UICollectionViewDelegate {
     func collectionView(_ collectionView: UICollectionView, willDisplay cell: UICollectionViewCell, forItemAt indexPath: IndexPath) {
         let numRows = collectionView.numberOfItems(inSection: 0)
@@ -95,6 +105,7 @@ extension ViewController: HeroListDelegate {
     }
     
     func receivedHeroes(indexPathsToInsert: [IndexPath]) {
+        view.unlock()
         spinner.stopAnimating()
         collectionView.insertItems(at: indexPathsToInsert)
     }

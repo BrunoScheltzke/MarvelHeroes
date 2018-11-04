@@ -17,13 +17,16 @@ class ComicTableViewCell: UITableViewCell {
         self.comicTitleLabel.text = comicVM.title
         comicVM.delegate = self
         comicVM.startLoadingImage()
+        comicImageView.image = comicVM.placeholderImage
         comicImageView.lock()
     }
 }
 
 extension ComicTableViewCell: ImageDelegate {
     func finishedLoadingImage(_ image: UIImage) {
-        self.comicImageView.image = image
-        comicImageView.unlock()
+        DispatchQueue.main.async {
+            self.comicImageView.image = image
+            self.comicImageView.unlock()
+        }
     }
 }

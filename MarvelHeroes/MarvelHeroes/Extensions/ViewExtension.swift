@@ -12,18 +12,6 @@ import UIKit
 private let backgroundViewTag = 3432
 
 extension UIView {
-    /// Adds tap recognizer on view that calls dismiss keyboard function
-    func addHideKeyboardOnTouch() {
-        let tap = UITapGestureRecognizer(target: self, action: #selector(dismissKeyboard))
-        tap.cancelsTouchesInView = false
-        self.addGestureRecognizer(tap)
-    }
-    
-    @objc func dismissKeyboard() {
-        self.endEditing(true)
-    }
-    
-    
     /// Blocks user interaction and add an animating view to represent a loading process
     func lock() {
         if let blockedView = self.viewWithTag(backgroundViewTag) {
@@ -50,16 +38,14 @@ extension UIView {
     
     /// Removes animating view that represents a loading process
     func unlock() {
-        DispatchQueue.main.async {
-            guard let backGroundView = self.viewWithTag(backgroundViewTag) else {
-                return
-            }
-            
-            UIView.animate(withDuration: 0.3, animations: {
-                backGroundView.alpha = 0
-            }) { (_) in
-                backGroundView.removeFromSuperview()
-            }
+        guard let backgroundView = self.viewWithTag(backgroundViewTag) else {
+            return
+        }
+        
+        UIView.animate(withDuration: 0.3, animations: {
+            backgroundView.alpha = 0
+        }) { (_) in
+            backgroundView.removeFromSuperview()
         }
     }
 }

@@ -14,7 +14,7 @@ final class HeroDetailViewModel {
     var comicViewModels: [ComicViewModel] = []
     var delegate: HeroDetailDelegate?
     
-    private let defaultAmountOfComics = 20
+    private let defaultAmountOfComics = 10
     
     private let hero: Hero
     private let marvelService: MarvelAPIServiceProtocol
@@ -51,7 +51,7 @@ final class HeroDetailViewModel {
             return
         }
         
-        marvelService.fetchImage(imgURL: imageURL) { [unowned self] result in
+        marvelService.fetchImage(imgURL: imageURL, with: .heroDetail) { [unowned self] result in
             switch result {
             case .failure: self.delegate?.finishedLoadingImage(#imageLiteral(resourceName: "marvellogo"))
             case .success(let image):
