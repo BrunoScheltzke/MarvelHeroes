@@ -44,30 +44,29 @@ class MarvelAPIService: MarvelAPIServiceProtocol {
         params[MarvelKeys.limit] = amount
         params[MarvelKeys.offset] = offset
         
-        completion(.failure(CustomError.invalidData))
-//        Alamofire.request(path,
-//                          method: .get,
-//                          parameters: params,
-//                          encoding: URLEncoding(destination: .queryString),
-//                          headers: nil)
-//            .validate()
-//            .responseJSON { response in
-//                switch response.result {
-//                case .success:
-//                    do {
-//                        guard let data = response.data else {
-//                            completion(.failure(CustomError.invalidData))
-//                            return
-//                        }
-//                        let result = try JSONDecoder().decode(MarvelResponse<T>.self, from: data)
-//                        completion(.success(result.results))
-//                    } catch {
-//                        completion(.failure(error))
-//                    }
-//                case .failure(let error):
-//                    completion(.failure(error))
-//                }
-//        }
+        Alamofire.request(path,
+                          method: .get,
+                          parameters: params,
+                          encoding: URLEncoding(destination: .queryString),
+                          headers: nil)
+            .validate()
+            .responseJSON { response in
+                switch response.result {
+                case .success:
+                    do {
+                        guard let data = response.data else {
+                            completion(.failure(CustomError.invalidData))
+                            return
+                        }
+                        let result = try JSONDecoder().decode(MarvelResponse<T>.self, from: data)
+                        completion(.success(result.results))
+                    } catch {
+                        completion(.failure(error))
+                    }
+                case .failure(let error):
+                    completion(.failure(error))
+                }
+        }
     }
     
     func requestComics(of hero: Hero, offset: Int? = 0, amount: Int, completion: @escaping(Result<[Comic]>) -> Void) {
