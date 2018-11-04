@@ -205,9 +205,9 @@
 		8429EDF2218C8E4400265E11 /* MarvelHeroesTests */ = {
 			isa = PBXGroup;
 			children = (
+				8429EDF5218C8E4400265E11 /* Info.plist */,
 				8429EDF3218C8E4400265E11 /* HeroListViewModelTests.swift */,
 				84C71D7D218F4C94001799ED /* HeroCellViewModelTests.swift */,
-				8429EDF5218C8E4400265E11 /* Info.plist */,
 				84C71D7F218F515E001799ED /* HeroDetailViewModelTests.swift */,
 				84C71D81218F54E0001799ED /* ComicViewModelTests.swift */,
 				84C71D85218F56F0001799ED /* DecoderTests.swift */,
