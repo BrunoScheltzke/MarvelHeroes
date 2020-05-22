@@ -35,13 +35,21 @@ class HeroDetailViewController: UIViewController {
     }
     
     func setupNavBar() {
-        let barButton = UIBarButtonItem(barButtonSystemItem: .done, target: self, action: #selector(getMostExpensiveComic))
-        barButton.title = "Most expensive comic"
-        navigationItem.rightBarButtonItem = barButton
+        heroDetailViewModel.hasComics = {
+            if $0 {
+                DispatchQueue.main.async {
+                    let barButton = UIBarButtonItem(barButtonSystemItem: .done, target: self, action: #selector(self.getMostExpensiveComic))
+                    barButton.title = "Most expensive comic"
+                    self.navigationItem.rightBarButtonItem = barButton
+                }
+            }
+        }
     }
     
     @objc func getMostExpensiveComic() {
+        view.lock()
         heroDetailViewModel.fetchMostExpensiveComic { result in
+            self.view.unlock()
             switch result {
             case .failure(let error): self.present(error: error)
             case .success(let comicVM): self.performSegue(withIdentifier: comicSegue, sender: comicVM)

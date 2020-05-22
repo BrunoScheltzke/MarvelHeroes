@@ -15,6 +15,8 @@ final class HeroDetailViewModel {
     
     var totalOfHeroComics: Int? = nil
     
+    var hasComics: ((Bool) -> Void)?
+    
     var hasReachedMaxAmountOfComics: Bool = false
     
     private var isFetching: Bool = false
@@ -65,6 +67,7 @@ final class HeroDetailViewModel {
                 strongSelf.comicViewModels.append(contentsOf: newComicsVM)
                 let indexPaths = strongSelf.getIndexPathsToInsert(newComics: newComicsVM)
                 completion(.success(indexPaths))
+                strongSelf.hasComics?(response.totalAmount > 0)
             }
         }
     }

@@ -14,7 +14,7 @@ class ComicViewModelTests: XCTestCase {
     var viewModel: ComicViewModel!
     
     override func setUp() {
-        let comic = Comic(id: 1, title: "test", imageURL: "")
+        let comic = Comic(id: 1, title: "test", imageURL: "", prices: [], description: "")
         marvelService = MarvelAPIServiceMock()
         viewModel = ComicViewModel(marvelService: marvelService, comic: comic)
     }
@@ -25,13 +25,13 @@ class ComicViewModelTests: XCTestCase {
     }
     
     func testHeroTitleUnavailable() {
-        let comic = Comic(id: 1, title: nil, imageURL: nil)
+        let comic = Comic(id: 1, title: nil, imageURL: nil, prices: [], description: "")
         viewModel = ComicViewModel(marvelService: marvelService, comic: comic)
         XCTAssertEqual("Title unavailable", viewModel.title)
     }
     
     func testHeroTitleEmpty() {
-        let comic = Comic(id: 1, title: "", imageURL: nil)
+        let comic = Comic(id: 1, title: "", imageURL: nil, prices: [], description: "")
         viewModel = ComicViewModel(marvelService: marvelService, comic: comic)
         XCTAssertEqual("Title unavailable", viewModel.title)
     }
@@ -50,7 +50,7 @@ class ComicViewModelTests: XCTestCase {
     }
     
     func testNilHeroImage() {
-        let comic = Comic(id: 1, title: "", imageURL: nil)
+        let comic = Comic(id: 1, title: "", imageURL: nil, prices: [], description: "")
         viewModel = ComicViewModel(marvelService: marvelService, comic: comic)
         
         let expectation = self.expectation(description: "testNilHeroImage")
