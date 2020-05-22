@@ -38,8 +38,7 @@ class HeroDetailViewController: UIViewController {
         heroDetailViewModel.hasComics = {
             if $0 {
                 DispatchQueue.main.async {
-                    let barButton = UIBarButtonItem(barButtonSystemItem: .done, target: self, action: #selector(self.getMostExpensiveComic))
-                    barButton.title = "Most expensive comic"
+                    let barButton = UIBarButtonItem(title: "Expensive comic", style: .done, target: self, action: #selector(self.getMostExpensiveComic))
                     self.navigationItem.rightBarButtonItem = barButton
                 }
             }
