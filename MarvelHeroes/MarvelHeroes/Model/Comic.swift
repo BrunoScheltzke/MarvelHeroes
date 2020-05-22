@@ -12,4 +12,10 @@ struct Comic: Decodable {
     let id: Int
     let title: String?
     let imageURL: String?
+    let prices: [ComicPrice]?
+}
+
+struct ComicPrice: Decodable {
+    let type: String?
+    let price: Double?
 }

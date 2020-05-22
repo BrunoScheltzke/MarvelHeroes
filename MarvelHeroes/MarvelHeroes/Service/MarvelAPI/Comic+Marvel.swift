@@ -13,6 +13,7 @@ extension Comic {
         case id
         case title
         case thumbnail
+        case prices
     }
     
     enum ThumbnailInfo: String, CodingKey {
@@ -24,6 +25,7 @@ extension Comic {
         let values = try decoder.container(keyedBy: CodingKeys.self)
         id = try values.decode(Int.self, forKey: .id)
         title = try values.decode(String.self, forKey: .title)
+        prices = try values.decode([ComicPrice].self, forKey: .prices)
         
         let thumbnailInfo = try values.nestedContainer(keyedBy: ThumbnailInfo.self, forKey: .thumbnail)
         let pathToImage = try thumbnailInfo.decode(String.self, forKey: .path)

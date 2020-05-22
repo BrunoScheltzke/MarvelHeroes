@@ -28,7 +28,7 @@ final class MarvelAPIServiceMock: MarvelAPIServiceProtocol {
         if shouldFailRequest {
             completion(.failure((CustomError.invalidData)))
         } else {
-            let comic = Comic.init(id: 1, title: "TestComic", imageURL: nil)
+            let comic = Comic.init(id: 1, title: "TestComic", imageURL: nil, prices: [])
             let comics = shouldSimulateMaxAmountRequest ? [] : [comic]
             completion(.success((comics, shouldSimulateMaxAmountRequest)))
         }
