@@ -10,6 +10,7 @@ import UIKit
 
 let comicCellId = "comicCell"
 let descriptionCell = "descriptionCell"
+let comicSegue = "comicSegue"
 
 class HeroDetailViewController: UIViewController {
     var heroDetailViewModel: HeroDetailViewModel!
@@ -30,6 +31,29 @@ class HeroDetailViewController: UIViewController {
         
         setupTableView()
         setupViewModel()
+        setupNavBar()
+    }
+    
+    func setupNavBar() {
+        let barButton = UIBarButtonItem(barButtonSystemItem: .done, target: self, action: #selector(getMostExpensiveComic))
+        barButton.title = "Most expensive comic"
+        navigationItem.rightBarButtonItem = barButton
+    }
+    
+    @objc func getMostExpensiveComic() {
+        heroDetailViewModel.fetchMostExpensiveComic { result in
+            switch result {
+            case .failure(let error): self.present(error: error)
+            case .success(let comicVM): self.performSegue(withIdentifier: comicSegue, sender: comicVM)
+            }
+        }
+    }
+    
+    override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
+        if let destination = segue.destination as? ComicViewController,
+            let viewModel = sender as? ComicViewModel {
+            destination.setup(with: viewModel)
+        }
     }
     
     func setupTableView() {
@@ -119,5 +143,10 @@ extension HeroDetailViewController: UIScrollViewDelegate, UITableViewDelegate {
             spinner.startAnimating()
             fetchComics()
         }
+    }
+    
+    func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
+        guard indexPath.section == 1 else { return }
+        performSegue(withIdentifier: comicSegue, sender: heroDetailViewModel.comicViewModels[indexPath.row])
     }
 }

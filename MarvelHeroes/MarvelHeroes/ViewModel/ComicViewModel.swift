@@ -11,6 +11,8 @@ import UIKit
 final class ComicViewModel {
     let title: String
     let placeholderImage: UIImage = #imageLiteral(resourceName: "marvellogo")
+    let price: String
+    let description: String
     
     private let comic: Comic
     private let marvelService: MarvelAPIServiceProtocol
@@ -24,6 +26,13 @@ final class ComicViewModel {
         } else {
             self.title = "Title unavailable"
         }
+        
+        if let priceDouble = self.comic.getMostExpensivePrice() {
+            price = "\(priceDouble)"
+        } else {
+            price = "Price unavailable"
+        }
+        description = comic.description ?? "Description unavailable"
     }
     
     func fetchComicImage(_ completion: @escaping(UIImage) -> Void) {

@@ -18,7 +18,7 @@ protocol MarvelAPIServiceProtocol {
     ///   - offset: the start point from where to get the amount of heroes
     ///   - amount: the amount of heroes to retrive
     ///   - completion: returns an array of the heroes and a boolean that informs if it has reached the maximum amount of heroes
-    func requestCharacters(offset: Int?, amount: Int, completion: @escaping(Result<([Hero], hasReachedMaxAmount: Bool)>) -> Void)
+    func requestCharacters(offset: Int?, amount: Int, completion: @escaping(Result<([Hero], totalAmount: Int)>) -> Void)
     
     /// Fetches Comics of a specific hero from the Marvel API
     ///
@@ -27,7 +27,7 @@ protocol MarvelAPIServiceProtocol {
     ///   - offset: the start point from where to get the amount of comics
     ///   - amount: the amount of comics to retrieve
     ///   - completion: returns an array of the comics and a boolean that informs if it has reached the maximum amount of comics of the given hero
-    func requestComics(of hero: Hero, offset: Int?, amount: Int, completion: @escaping(Result<([Comic], hasReachedMaxAmount: Bool)>) -> Void)
+    func requestComics(of hero: Hero, offset: Int?, amount: Int, completion: @escaping(Result<([Comic], totalAmount: Int)>) -> Void)
     func fetchImage(imgURL: String, with size: MarvelImageSize, completion: @escaping(Result<UIImage>) -> Void)
 }
 
@@ -51,11 +51,11 @@ final class MarvelAPIService: MarvelAPIServiceProtocol {
     // Handles image caching
     private let imageCache = AutoPurgingImageCache()
     
-    func requestCharacters(offset: Int? = 0, amount: Int, completion: @escaping(Result<([Hero], hasReachedMaxAmount: Bool)>) -> Void) {
+    func requestCharacters(offset: Int? = 0, amount: Int, completion: @escaping(Result<([Hero], totalAmount: Int)>) -> Void) {
         performGenericRequest(withPath: charactersPath, offset: offset!, amount: amount, completion: completion)
     }
     
-    func requestComics(of hero: Hero, offset: Int? = 0, amount: Int, completion: @escaping(Result<([Comic], hasReachedMaxAmount: Bool)>) -> Void) {
+    func requestComics(of hero: Hero, offset: Int? = 0, amount: Int, completion: @escaping(Result<([Comic], totalAmount: Int)>) -> Void) {
         let path = String(format: comicsPath, "\(hero.id)")
         performGenericRequest(withPath: path, offset: offset!, amount: amount, completion: completion)
     }
@@ -91,7 +91,7 @@ final class MarvelAPIService: MarvelAPIServiceProtocol {
     ///   - offset: the start point from where to get the amount of data
     ///   - amount: the amount of data to retrive
     ///   - completion: returns an array of the model requested and a boolean that informs if has reached the maximum amount of data of that model
-    private func performGenericRequest<T: Decodable>(withPath path: String, offset: Int, amount: Int, completion: @escaping(Result<(T, hasReachedMaxAmount: Bool)>) -> Void) {
+    private func performGenericRequest<T: Decodable>(withPath path: String, offset: Int, amount: Int, completion: @escaping(Result<(T, totalAmount: Int)>) -> Void) {
         var params = defaultParams
         params[MarvelKeys.limit] = amount
         params[MarvelKeys.offset] = offset
@@ -112,9 +112,9 @@ final class MarvelAPIService: MarvelAPIServiceProtocol {
                         }
                         let result = try JSONDecoder().decode(MarvelResponse<T>.self, from: data)
                         
-                        let hasReachedMaxAmount = result.total <= offset + amount
+//                        let hasReachedMaxAmount = result.total <= offset + amount
                         
-                        completion(.success((result.results, hasReachedMaxAmount)))
+                        completion(.success((result.results, result.total)))
                     } catch {
                         completion(.failure(error))
                     }

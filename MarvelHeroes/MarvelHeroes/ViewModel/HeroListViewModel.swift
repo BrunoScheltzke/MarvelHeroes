@@ -36,14 +36,16 @@ final class HeroListViewModel {
             return
         }
         
-        marvelService.requestCharacters(offset: heroesCellViewModel.count,
-                                        amount: defaultAmountOfHeroes) { [unowned self] result in
+        let offset = heroesCellViewModel.count
+        let amount = defaultAmountOfHeroes
+        marvelService.requestCharacters(offset: offset,
+                                        amount: amount) { [unowned self] result in
             switch result {
             case .failure(let error):
                 completion(.failure(error))
                 
             case .success(let response):
-                self.hasReachedMaxAmountOfHeroes = response.hasReachedMaxAmount
+                self.hasReachedMaxAmountOfHeroes = response.totalAmount <= offset + amount
                 let newHeroes = response.0
                 let newHeroesVM = newHeroes.map { HeroCellViewModel(marvelService: self.marvelService, hero: $0) }
                 self.heroesCellViewModel.append(contentsOf: newHeroesVM)

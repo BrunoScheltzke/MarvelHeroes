@@ -13,6 +13,8 @@ final class HeroDetailViewModel {
     let description: String
     var comicViewModels: [ComicViewModel] = []
     
+    var totalOfHeroComics: Int? = nil
+    
     var hasReachedMaxAmountOfComics: Bool = false
     
     private var isFetching: Bool = false
@@ -47,15 +49,17 @@ final class HeroDetailViewModel {
             completion(.success([]))
             return
         }
-        
-        marvelService.requestComics(of: hero, offset: comicViewModels.count, amount: defaultAmountOfComics) { [weak self] result in
+        let offset = comicViewModels.count
+        let amount = defaultAmountOfComics
+        marvelService.requestComics(of: hero, offset: offset, amount: amount) { [weak self] result in
             guard let strongSelf = self else { return }
             
             strongSelf.isFetching = false
             switch result {
             case .failure(let error): completion(.failure(error))
             case .success(let response):
-                strongSelf.hasReachedMaxAmountOfComics = response.hasReachedMaxAmount
+                strongSelf.totalOfHeroComics = response.totalAmount
+                strongSelf.hasReachedMaxAmountOfComics = response.totalAmount <= offset + amount
                 let newComics = response.0
                 let newComicsVM = newComics.map { ComicViewModel(marvelService: strongSelf.marvelService, comic: $0) }
                 strongSelf.comicViewModels.append(contentsOf: newComicsVM)
@@ -70,6 +74,22 @@ final class HeroDetailViewModel {
         let startIndex = comicViewModels.count - newComics.count
         let endIndex = startIndex + newComics.count
         return (startIndex..<endIndex).map { IndexPath(row: $0, section: 1) }
+    }
+    
+    func fetchMostExpensiveComic(_ completion: @escaping(Result<ComicViewModel>) -> Void) {
+        marvelService.requestComics(of: hero, offset: 0, amount: totalOfHeroComics ?? 0) { result in
+            switch result {
+            case .failure(let error): completion(.failure(error))
+            case .success(let resultFetched):
+                let comics = resultFetched.0
+                
+                if let mostExpensiveComic = comics.max(by: { $0.getMostExpensivePrice() ?? 0 < $1.getMostExpensivePrice() ?? 0 }) {
+                    completion(.success(ComicViewModel(marvelService: self.marvelService, comic: mostExpensiveComic)))
+                } else {
+                    completion(.failure(CustomError.invalidData))
+                }
+            }
+        }
     }
     
     func fetchHeroDetailImage(_ completion: @escaping(UIImage) -> Void) {

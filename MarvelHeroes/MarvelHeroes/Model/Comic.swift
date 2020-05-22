@@ -13,6 +13,11 @@ struct Comic: Decodable {
     let title: String?
     let imageURL: String?
     let prices: [ComicPrice]?
+    let description: String?
+    
+    func getMostExpensivePrice() -> Double? {
+        return prices?.map({ $0.price ?? 0 }).max()
+    }
 }
 
 struct ComicPrice: Decodable {

@@ -10,9 +10,10 @@ import UIKit
 
 final class MarvelAPIServiceMock: MarvelAPIServiceProtocol {
     var shouldFailRequest: Bool = false
-    var shouldSimulateMaxAmountRequest = false
+    var totalAmount: Int = 0
+    var shouldSimulateMaxAmountRequest: Bool = false
     
-    func requestCharacters(offset: Int?, amount: Int, completion: @escaping (Result<([Hero], hasReachedMaxAmount: Bool)>) -> Void) {
+    func requestCharacters(offset: Int?, amount: Int, completion: @escaping (Result<([Hero], totalAmount: Int)>) -> Void) {
         if shouldFailRequest {
             completion(.failure((CustomError.invalidData)))
         } else {
@@ -20,17 +21,17 @@ final class MarvelAPIServiceMock: MarvelAPIServiceProtocol {
             
             let heroes = shouldSimulateMaxAmountRequest ? [] : [hero]
             
-            completion(.success((heroes, shouldSimulateMaxAmountRequest)))
+            completion(.success((heroes, totalAmount)))
         }
     }
     
-    func requestComics(of hero: Hero, offset: Int?, amount: Int, completion: @escaping (Result<([Comic], hasReachedMaxAmount: Bool)>) -> Void) {
+    func requestComics(of hero: Hero, offset: Int?, amount: Int, completion: @escaping (Result<([Comic], totalAmount: Int)>) -> Void) {
         if shouldFailRequest {
             completion(.failure((CustomError.invalidData)))
         } else {
-            let comic = Comic.init(id: 1, title: "TestComic", imageURL: nil, prices: [])
+            let comic = Comic.init(id: 1, title: "TestComic", imageURL: nil, prices: [], description: "TestDescription")
             let comics = shouldSimulateMaxAmountRequest ? [] : [comic]
-            completion(.success((comics, shouldSimulateMaxAmountRequest)))
+            completion(.success((comics, totalAmount)))
         }
     }
     
